@@ -64,7 +64,10 @@ func (r *Raft) StartNode() {
 				print("connection to %s timedout", peerAddr)
 			}
 
-			json.NewEncoder(conn).Encode(r) 
+			err = json.NewEncoder(conn).Encode(r) 
+			if err != nil {
+				print("we can't send to %s", peerAddr)
+			}
 
 			var peerRes Raft
 			json.NewDecoder(conn).Decode(&peerRes)
