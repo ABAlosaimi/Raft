@@ -18,7 +18,6 @@ const (
 	ElectionTimeout time.Duration = 300 * time.Millisecond // the election timeout is 300ms, after that we will assume the election is failed and start a new election
 	ConfigPath string = "./config.yaml"
 )
-var Communication net.Conn // this var will hold the tcp connection that all the communication will go through.
 
 type Raft struct {
 	  Me            int
