@@ -16,7 +16,6 @@ const (
 	Leader State = "Leader"
 	LeaderTimeout time.Duration = 5 * time.Second // the leader timeout is 5s, after that we will assume the leader is dead and start a new election
 	ElectionTimeout time.Duration = 300 * time.Millisecond // the election timeout is 300ms, after that we will assume the election is failed and start a new election
-	CommunicationPort string = ":50000"
 	ConfigPath string = "./config.yaml"
 )
 var Communication net.Conn // this var will hold the tcp connection that all the communication will go through.
