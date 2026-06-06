@@ -47,20 +47,21 @@ type PeerConfig struct {
 func (r *Raft) StartNode() {
 	data, err := os.ReadFile(ConfigPath)
 	if err != nil {
-		panic("the node can't read the config" + err.Error())
+		panic("the node can't read the configuration file:" + err.Error())
 	}
 
 	var cfg Config
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		print("we can't unmarchal the config" + err.Error())
+		print("we can't unmarchal the configuration data to set the peers and host IP:" + err.Error())
 	}
 	
-	for i := 0; i < len(cfg.Peers); i++ { // spinning threads to read other nodes data 
+	// spinning up threads to read other nodes data on the begging of a node (it act as a hi to other nodes)
+	for i := 0; i < len(cfg.Peers); i++ { 
 		go func(peerAddr string) {
-			conn, err := net.DialTimeout("tcp", peerAddr, 1 * time.Second)
+			conn, err := net.DialTimeout("tcp", peerAddr, 5 * time.Second)
 			if err != nil {
-				print("connection to %s timedout", peerAddr)
+				print("connection to %s failed", peerAddr)
 			}
 
 			err = json.NewEncoder(conn).Encode(r) 
@@ -79,6 +80,32 @@ func (r *Raft) StartNode() {
 
 }
 
-func (r *Raft) ReceiveBroadcastMsg(sender int, senderState State, term int, leader int, logLen int) {
+func (r *Raft) OnStartlistener() {
+	data, err := os.ReadFile(ConfigPath) // the config file should be read once as a const 
+	if err != nil {
+		print("we can't read the config file to get the host ip")
+	}	
+	
+	var cfg Config 
+	yaml.Unmarshal(data, &cfg)
 
+	lis, err := net.Listen("tcp", cfg.HostIP)
+	if err != nil {
+		print("we can't listen to brodcast messages")
+	}
+	defer lis.Close()
+
+	var peerRes Raft
+	for {
+		conn, err := lis.Accept()
+		if err != nil { 
+				print("we cant't bind a accept to connection")
+				continue
+			}
+		if err := json.NewDecoder(conn).Decode(&peerRes); err != nil {
+				print("we cant't read the data from the connection")
+          		continue
+      		}
+		print(peerRes)
+	}
 }
